@@ -33,7 +33,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0e27] text-white flex flex-col">
-      <Header />
+      <Header onSymbolSearch={setCurrentSymbol} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <MainContent>

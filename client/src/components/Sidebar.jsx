@@ -1,13 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 function Sidebar() {
+  const [activeItem, setActiveItem] = useState('Dashboard')
+  
   const menuItems = [
-    { icon: '📊', label: 'Dashboard', active: true },
-    { icon: '📈', label: 'Analysis', active: false },
-    { icon: '⚡', label: 'Alerts', active: false },
-    { icon: '📋', label: 'Watchlist', active: false },
-    { icon: '⚙️', label: 'Settings', active: false },
+    { icon: '📊', label: 'Dashboard', path: '/' },
+    { icon: '📈', label: 'Analysis', path: '/analysis' },
+    { icon: '⚡', label: 'Alerts', path: '/alerts' },
+    { icon: '📋', label: 'Watchlist', path: '/watchlist' },
+    { icon: '⚙️', label: 'Settings', path: '/settings' },
   ]
+
+  const handleItemClick = (label) => {
+    setActiveItem(label)
+    console.log(`Navigating to: ${label}`)
+    // In Phase 5, we'll add React Router for actual navigation
+  }
 
   return (
     <aside className="bg-[#1a1f3a] w-64 min-h-screen border-r border-[#2d3748]">
@@ -16,8 +24,9 @@ function Sidebar() {
           {menuItems.map((item, index) => (
             <li key={index}>
               <button
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  item.active
+                onClick={() => handleItemClick(item.label)}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors cursor-pointer ${
+                  activeItem === item.label
                     ? 'bg-[#252b47] text-[#00ff88] border-l-4 border-[#00ff88]'
                     : 'text-gray-400 hover:bg-[#252b47] hover:text-white'
                 }`}
