@@ -1,0 +1,19 @@
+{
+  "name": "tradematrix",
+  "version": "1.0.0",
+  "description": "Stock Analysis Dashboard - Multi-Time Frame Bias Matrix",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "cd server && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["trading", "stocks", "technical-analysis", "dashboard"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
