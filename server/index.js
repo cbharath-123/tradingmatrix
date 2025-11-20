@@ -5,29 +5,61 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Import routes
+const apiRoutes = require('./routes/api');
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Placeholder API endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'success',
-    message: 'TradeMatrix API is running',
-    timestamp: new Date().toISOString()
+// Logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
+
+// API Routes
+app.use('/api', apiRoutes);
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    service: 'TradeMatrix API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/api/health',
+      trendMatrix: '/api/trend-matrix/:symbol',
+      symbols: '/api/symbols'
+    },
+    documentation: 'https://github.com/tradematrix/api-docs'
   });
 });
 
-// Test endpoint for stock data
-app.get('/api/stocks/:symbol', (req, res) => {
-  const { symbol } = req.params;
-  res.json({
-    symbol: symbol.toUpperCase(),
-    message: 'Stock endpoint ready - will integrate real data in Phase 2'
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not found',
+    message: `Route ${req.method} ${req.path} not found`
   });
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 TradeMatrix API running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 Alpha Vantage API: ${process.env.ALPHA_VANTAGE_API_KEY ? 'Configured' : 'NOT CONFIGURED'}`);
+  console.log(`\nAvailable endpoints:`);
+  console.log(`  - http://localhost:${PORT}/api/health`);
+  console.log(`  - http://localhost:${PORT}/api/trend-matrix/:symbol`);
+  console.log(`  - http://localhost:${PORT}/api/symbols`);
 });
