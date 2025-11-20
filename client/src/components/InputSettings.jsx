@@ -1,11 +1,40 @@
-import React from 'react'
+import React, { useState } from 'react'
 
-function InputSettings() {
+function InputSettings({ currentSettings, onUpdate, onSymbolChange, currentSymbol }) {
   const timeframes = ['15m', '1h', '4h', '1D', '1W']
+  const [symbolInput, setSymbolInput] = useState(currentSymbol || 'AAPL')
+  
+  const handleSymbolSubmit = (e) => {
+    e.preventDefault()
+    if (symbolInput.trim() && onSymbolChange) {
+      onSymbolChange(symbolInput.trim().toUpperCase())
+    }
+  }
   
   return (
     <div className="bg-[#1a1f3a] rounded-lg p-6 border border-[#2d3748]">
       <h3 className="text-xl font-bold text-[#00ff88] mb-6">INPUT SETTINGS</h3>
+      
+      {/* Symbol Input */}
+      <div className="mb-6">
+        <h4 className="text-white font-semibold mb-3">Stock Symbol</h4>
+        <form onSubmit={handleSymbolSubmit} className="flex space-x-2">
+          <input
+            type="text"
+            value={symbolInput}
+            onChange={(e) => setSymbolInput(e.target.value.toUpperCase())}
+            placeholder="Enter symbol..."
+            className="flex-1 bg-[#252b47] text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3366ff] placeholder-gray-500"
+          />
+          <button
+            type="submit"
+            className="bg-[#3366ff] hover:bg-[#3366ff]/80 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+          >
+            Load
+          </button>
+        </form>
+        <p className="text-xs text-gray-500 mt-2">Examples: AAPL, MSFT, GOOGL, TSLA</p>
+      </div>
       
       <div className="space-y-6">
         {/* Timeframe Selection */}

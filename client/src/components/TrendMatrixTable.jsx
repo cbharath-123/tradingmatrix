@@ -1,6 +1,13 @@
 import React from 'react'
 
-function TrendMatrixTable({ data }) {
+function TrendMatrixTable({ data, aggregate, symbol, settings }) {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-[#1a1f3a] rounded-lg p-6 border border-[#2d3748]">
+        <p className="text-gray-400">No data available</p>
+      </div>
+    )
+  }
   // Function to determine the background color based on score
   const getScoreColor = (score) => {
     if (score >= 40) return 'bg-[#10b981] text-white'
@@ -38,22 +45,27 @@ function TrendMatrixTable({ data }) {
     <div className="bg-[#1a1f3a] rounded-lg p-6 border border-[#2d3748]">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-2xl font-bold text-white mb-2">MULTI-TIME FRAME BIAS MATRIX</h3>
+          <h3 className="text-2xl font-bold text-white mb-2">
+            MULTI-TIME FRAME BIAS MATRIX
+            {symbol && <span className="text-[#00ff88] ml-2">({symbol})</span>}
+          </h3>
           <div className="flex items-center space-x-4 text-sm">
-            <span className="text-gray-400">RSI Period: <span className="text-white">4.02%</span></span>
-            <span className="text-gray-400">EMA Period: <span className="text-white">4.02%</span></span>
-            <span className="text-gray-400">ADX Threshold: <span className="text-white">25</span></span>
-            <span className="text-gray-400">Alerts On: <span className="text-white">Bias</span></span>
-            <span className="text-gray-400">Strong Trend: <span className="text-white">160</span></span>
+            <span className="text-gray-400">EMA Length: <span className="text-white">{settings?.emaLength || 50}</span></span>
+            <span className="text-gray-400">RSI Length: <span className="text-white">{settings?.rsiLength || 14}</span></span>
+            <span className="text-gray-400">ADX Threshold: <span className="text-white">{settings?.adxThreshold || 25}</span></span>
+            <span className="text-gray-400">MACD: <span className="text-white">{settings?.macdFast || 12}/{settings?.macdSlow || 26}/{settings?.macdSignal || 9}</span></span>
           </div>
         </div>
         <div className="text-right">
           <div className="text-sm text-gray-400 mb-1">AGGREGATE BIAS:</div>
-          <div className="text-3xl font-bold text-[#00ff88]">
-            +72 <span className="text-sm">(GRADE: A-)</span>
+          <div className={`text-3xl font-bold ${aggregate?.score >= 0 ? 'text-[#00ff88]' : 'text-[#ff3366]'}`}>
+            {aggregate?.score >= 0 ? '+' : ''}{aggregate?.score || 0} 
+            <span className="text-sm ml-2">(GRADE: {aggregate?.grade || 'N/A'})</span>
           </div>
           <div className="flex items-center justify-end mt-2">
-            <span className="text-green-400 mr-2">↑ Bullish</span>
+            <span className={`mr-2 ${aggregate?.score >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {aggregate?.score >= 0 ? '↑' : '↓'} {aggregate?.bias || 'Neutral'}
+            </span>
             <div className="relative w-16 h-16">
               <svg className="transform -rotate-90 w-16 h-16">
                 <circle
@@ -68,16 +80,16 @@ function TrendMatrixTable({ data }) {
                   cx="32"
                   cy="32"
                   r="28"
-                  stroke="#00ff88"
+                  stroke={aggregate?.score >= 0 ? '#00ff88' : '#ff3366'}
                   strokeWidth="6"
                   fill="none"
                   strokeDasharray="175.93"
-                  strokeDashoffset="44"
+                  strokeDashoffset={175.93 * (1 - (aggregate?.confidence || 0))}
                   className="transition-all duration-500"
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">0.81</span>
+                <span className="text-xs font-bold text-white">{aggregate?.confidence?.toFixed(2) || '0.00'}</span>
               </div>
             </div>
           </div>
