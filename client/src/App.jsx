@@ -3,6 +3,8 @@ import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import TrendMatrixTable from './components/TrendMatrixTable'
+import TradingChart from './components/TradingChart'
+import TrendMatrixOverlay from './components/TrendMatrixOverlay'
 import AlertCard from './components/AlertCard'
 import InputSettings from './components/InputSettings'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -51,33 +53,50 @@ function App() {
             {/* Data Loaded Successfully */}
             {!loading && !error && data && (
               <>
-                {/* Alert Card */}
-                {data.alert?.triggered && (
-                  <AlertCard 
-                    type={data.alert.type?.toLowerCase().includes('bullish') ? 'bullish' : 'bearish'}
-                    aggregateScore={data.aggregate?.score || 0}
-                    confidence={data.aggregate?.confidence?.toFixed(2) || '0.00'}
-                    timeframes={data.aggregate?.timeframesInAgreement || 'N/A'}
+                {/* Chart with Overlay */}
+                <div className="relative w-full h-[600px] bg-[#0a0e27] rounded-lg overflow-hidden">
+                  <TradingChart symbol={currentSymbol} />
+                  <TrendMatrixOverlay 
+                    data={data.timeframes || []} 
+                    aggregate={data.aggregate}
+                    symbol={data.symbol}
+                    settings={data.settings}
                   />
-                )}
-                
-                {/* Main Grid Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <TrendMatrixTable 
-                      data={data.timeframes || []} 
-                      aggregate={data.aggregate}
-                      symbol={data.symbol}
-                      settings={data.settings}
-                    />
+                </div>
+
+                {/* RSI Indicator */}
+                <div className="bg-[#131722] rounded-lg p-4 flex items-center gap-4">
+                  <div className="flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full">
+                    <span className="text-blue-400 font-bold text-xl">R</span>
                   </div>
                   <div>
-                    <InputSettings 
-                      currentSettings={settings}
-                      onUpdate={handleSettingsUpdate}
-                      onSymbolChange={setCurrentSymbol}
-                      currentSymbol={currentSymbol}
-                    />
+                    <div className="text-gray-400 text-sm">RSI: 64.2</div>
+                    <div className="text-white text-lg font-semibold">Value: +0.32</div>
+                  </div>
+                </div>
+
+                {/* Market Status */}
+                <div className="bg-[#131722] rounded-lg p-4">
+                  <h3 className="text-white font-semibold mb-3">MARKET STATUS</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Status:</span>
+                      <span className="text-green-400 font-semibold">Open</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Volume:</span>
+                      <span className="text-white font-semibold">High</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Settings Panel */}
+                <InputSettings 
+                  currentSettings={settings}
+                  onUpdate={handleSettingsUpdate}
+                  onSymbolChange={setCurrentSymbol}
+                  currentSymbol={currentSymbol}
+                />
                   </div>
                 </div>
 
