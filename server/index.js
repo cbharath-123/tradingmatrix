@@ -53,13 +53,18 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 TradeMatrix API running on port ${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 Alpha Vantage API: ${process.env.ALPHA_VANTAGE_API_KEY ? 'Configured' : 'NOT CONFIGURED'}`);
-  console.log(`\nAvailable endpoints:`);
-  console.log(`  - http://localhost:${PORT}/api/health`);
-  console.log(`  - http://localhost:${PORT}/api/trend-matrix/:symbol`);
-  console.log(`  - http://localhost:${PORT}/api/symbols`);
-});
+// Start server (only in development, Vercel handles this in production)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 TradeMatrix API running on port ${PORT}`);
+    console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔑 Alpha Vantage API: ${process.env.ALPHA_VANTAGE_API_KEY ? 'Configured' : 'NOT CONFIGURED'}`);
+    console.log(`\nAvailable endpoints:`);
+    console.log(`  - http://localhost:${PORT}/api/health`);
+    console.log(`  - http://localhost:${PORT}/api/trend-matrix/:symbol`);
+    console.log(`  - http://localhost:${PORT}/api/symbols`);
+  });
+}
+
+// Export for Vercel serverless
+module.exports = app;
