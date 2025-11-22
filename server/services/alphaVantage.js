@@ -39,10 +39,15 @@ async function fetchDailyData(symbol, outputSize = 'compact') {
       throw new Error('API call frequency limit reached. Please wait and try again.');
     }
 
+    if (response.data['Information']) {
+      throw new Error(`API Limit: ${response.data['Information']}`);
+    }
+
     const timeSeries = response.data['Time Series (Daily)'];
     
     if (!timeSeries) {
-      throw new Error(`No data found for symbol: ${symbol}`);
+      console.error('Alpha Vantage Response:', JSON.stringify(response.data, null, 2));
+      throw new Error(`No data found for symbol: ${symbol}. API Response: ${JSON.stringify(response.data).substring(0, 200)}`);
     }
 
     // Convert the time series object into an array of OHLCV objects
