@@ -16,21 +16,7 @@ app.use((req, res, next) => {
 });
 
 // Mount API routes at root level (since this is already /api)
-app.use('/', apiRoutes);
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    service: 'TradeMatrix API',
-    version: '1.0.0',
-    status: 'running',
-    endpoints: {
-      health: '/api/health',
-      trendMatrix: '/api/trend-matrix/:symbol',
-      symbols: '/api/symbols'
-    }
-  });
-});
+app.use(apiRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
