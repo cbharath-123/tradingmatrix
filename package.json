@@ -13,6 +13,11 @@
   "keywords": ["trading", "stocks", "technical-analysis", "dashboard"],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
   "devDependencies": {
     "concurrently": "^9.2.1"
   }
