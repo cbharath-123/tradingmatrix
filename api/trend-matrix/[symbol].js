@@ -1,6 +1,6 @@
 // Vercel serverless function for trend matrix
-const { fetchDailyData } = require('../server/services/alphaVantage');
-const { calculateTrendMatrix } = require('../server/logic/trendMatrix');
+const { fetchDailyData } = require('../../server/services/alphaVantage');
+const { calculateTrendMatrix } = require('../../server/logic/trendMatrix');
 
 module.exports = async (req, res) => {
   try {
