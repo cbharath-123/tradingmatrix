@@ -4,7 +4,7 @@ import Sidebar from './components/Sidebar'
 import MainContent from './components/MainContent'
 import TrendMatrixTable from './components/TrendMatrixTable'
 import TradingChart from './components/TradingChart'
-import TrendMatrixOverlay from './components/TrendMatrixOverlay'
+import TrendMatrixPanel from './components/TrendMatrixPanel'
 import AlertCard from './components/AlertCard'
 import InputSettings from './components/InputSettings'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -37,7 +37,6 @@ function App() {
     <div className="min-h-screen bg-[#0a0e27] text-white flex flex-col">
       <Header onSymbolSearch={setCurrentSymbol} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
         <MainContent>
           <div className="space-y-6">
             {/* Loading State */}
@@ -53,40 +52,44 @@ function App() {
             {/* Data Loaded Successfully */}
             {!loading && !error && data && (
               <>
-                {/* Chart with Overlay */}
-                <div className="relative w-full h-[600px] bg-[#0a0e27] rounded-lg overflow-hidden">
-                  <TradingChart symbol={currentSymbol} />
-                  <TrendMatrixOverlay 
-                    data={data.timeframes || []} 
-                    aggregate={data.aggregate}
-                    symbol={data.symbol}
-                    settings={data.settings}
-                  />
-                </div>
-
-                {/* RSI Indicator */}
-                <div className="bg-[#131722] rounded-lg p-4 flex items-center gap-4">
-                  <div className="flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full">
-                    <span className="text-blue-400 font-bold text-xl">R</span>
+                {/* Main Layout: 70% Graph + 30% Table */}
+                <div className="flex gap-4 h-[700px]">
+                  {/* Graph Section - 70% */}
+                  <div className="relative w-[70%] bg-[#0a0e27] rounded-lg overflow-hidden">
+                    <TradingChart symbol={currentSymbol} />
                   </div>
-                  <div>
-                    <div className="text-gray-400 text-sm">RSI: 64.2</div>
-                    <div className="text-white text-lg font-semibold">Value: +0.32</div>
-                  </div>
-                </div>
 
-                {/* Market Status */}
-                <div className="bg-[#131722] rounded-lg p-4">
-                  <h3 className="text-white font-semibold mb-3">MARKET STATUS</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Status:</span>
-                      <span className="text-green-400 font-semibold">Open</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Volume:</span>
-                      <span className="text-white font-semibold">High</span>
-                    </div>
+                  {/* Table Section - 30% */}
+                  <div className="w-[30%] bg-[#0a0e27] rounded-lg overflow-hidden flex items-start">
+                    <TrendMatrixPanel 
+                      data={{
+                        aggregateBias: data.aggregate?.score || 0,
+                        grade: data.aggregate?.grade || 'C',
+                        confidence: data.aggregate?.confidence || 0,
+                        settings: {
+                          rsiPeriod: settings.rsiLength,
+                          emaPeriod: settings.emaLength,
+                          adxThreshold: settings.adxThreshold,
+                          alertsOn: true,
+                          strongTrend: 60
+                        },
+                        indicatorToggles: {
+                          ema: true,
+                          rsi: true,
+                          macd: true,
+                          st: true
+                        },
+                        matrixData: (data.timeframes || []).map(tf => ({
+                          timeframe: tf.timeframe,
+                          score: tf.score,
+                          confidence: tf.confidence,
+                          ema: tf.ema,
+                          rsi: tf.rsi,
+                          macd: tf.macd,
+                          supertrend: tf.supertrend
+                        }))
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -97,8 +100,6 @@ function App() {
                   onSymbolChange={setCurrentSymbol}
                   currentSymbol={currentSymbol}
                 />
-                  </div>
-                </div>
 
                 {/* Data Info Footer */}
                 <div className="bg-[#1a1f3a] rounded-lg p-4 border border-[#2d3748] text-sm text-gray-400">

@@ -21,7 +21,7 @@ function TradingChart({ symbol = 'AAPL', theme = 'dark' }) {
         widgetRef.current = new window.TradingView.widget({
           autosize: true,
           symbol: `NASDAQ:${symbol}`,
-          interval: 'D',
+          interval: '240',
           timezone: 'America/New_York',
           theme: theme,
           style: '1',
@@ -34,7 +34,6 @@ function TradingChart({ symbol = 'AAPL', theme = 'dark' }) {
           container_id: 'tradingview_chart',
           studies: [
             'MASimple@tv-basicstudies',
-            'RSI@tv-basicstudies',
             'Volume@tv-basicstudies'
           ],
           backgroundColor: '#0a0e27',
@@ -44,7 +43,18 @@ function TradingChart({ symbol = 'AAPL', theme = 'dark' }) {
           show_popup_button: false,
           popup_width: '1000',
           popup_height: '650',
-          no_referral_id: true
+          no_referral_id: true,
+          overrides: {
+            "mainSeriesProperties.candleStyle.upColor": "#26a69a",
+            "mainSeriesProperties.candleStyle.downColor": "#ef5350",
+            "mainSeriesProperties.candleStyle.drawWick": true,
+            "mainSeriesProperties.candleStyle.drawBorder": true,
+            "mainSeriesProperties.candleStyle.borderUpColor": "#26a69a",
+            "mainSeriesProperties.candleStyle.borderDownColor": "#ef5350",
+            "mainSeriesProperties.candleStyle.wickUpColor": "#26a69a",
+            "mainSeriesProperties.candleStyle.wickDownColor": "#ef5350",
+            "volumePaneSize": "medium"
+          }
         })
       }
     }

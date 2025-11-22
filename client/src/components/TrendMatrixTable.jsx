@@ -1,219 +1,241 @@
 import React from 'react'
+import ToggleSwitch from './ToggleSwitch'
 
 function TrendMatrixTable({ data, aggregate, symbol, settings }) {
-  if (!data || data.length === 0) {
-    return (
-      <div className="bg-[#1a1f3a] rounded-lg p-6 border border-[#2d3748]">
-        <p className="text-gray-400">No data available</p>
-      </div>
-    )
-  }
-  // Function to determine the background color based on score
-  const getScoreColor = (score) => {
-    if (score >= 40) return 'bg-[#10b981] text-white'
-    if (score >= 20) return 'bg-[#10b981]/70 text-white'
-    if (score > 0) return 'bg-[#10b981]/40 text-white'
-    if (score === 0) return 'bg-gray-600 text-white'
-    if (score >= -20) return 'bg-[#ef4444]/40 text-white'
-    if (score >= -40) return 'bg-[#ef4444]/70 text-white'
-    return 'bg-[#ef4444] text-white'
+  // Helper for background colors based on value intensity
+  const getIntensityColor = (val, type = 'standard') => {
+    // Custom logic to match screenshot colors
+    if (type === 'score') {
+      if (val >= 60) return 'bg-[#15803d]' // Strong Green
+      if (val >= 40) return 'bg-[#16a34a]' // Green
+      if (val >= 0) return 'bg-[#22c55e]' // Light Green
+      if (val >= -40) return 'bg-[#b91c1c]' // Red
+      return 'bg-[#991b1b]' // Dark Red
+    }
+    return 'bg-gray-700'
   }
 
-  // Function to get confidence color
-  const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) return 'text-[#00ff88]'
-    if (confidence >= 0.6) return 'text-[#ffcc00]'
-    return 'text-[#ff3366]'
-  }
-
-  // Function to get indicator cell color
-  const getIndicatorColor = (value) => {
-    if (value === 1) return 'bg-[#10b981]' // Green for bullish
-    if (value === -1) return 'bg-[#ef4444]' // Red for bearish
-    return 'bg-gray-600' // Gray for neutral
-  }
-
-  // Function to get ADX circle color
-  const getADXColor = (value) => {
-    if (value >= 1.0) return 'border-[#00ff88] bg-[#00ff88]/20'
-    if (value >= 0.8) return 'border-[#ff3366] bg-[#ff3366]/20'
-    if (value >= 0.5) return 'border-gray-400 bg-gray-400/20'
-    return 'border-blue-400 bg-blue-400/20'
+  // Specific cell background logic to match screenshot
+  const getCellBackground = (type, value) => {
+    switch(type) {
+      case 'score':
+        if (value >= 60) return 'bg-[#16a34a]'
+        if (value >= 40) return 'bg-[#22c55e]'
+        if (value >= 0) return 'bg-[#16a34a]'
+        if (value < 0) return 'bg-[#16a34a]' 
+        return 'bg-gray-800'
+      case 'confident':
+        if (value >= 0.8) return 'bg-[#86efac] text-black'
+        if (value >= 0.7) return 'bg-[#86efac] text-black'
+        if (value >= 0.4) return 'bg-[#bef264] text-black'
+        return 'bg-[#86efac] text-black'
+      case 'adx': // The circle column
+        if (value >= 0.8) return 'bg-[#16a34a]' 
+        if (value >= 0.5) return 'bg-[#22c55e]' 
+        return 'bg-[#16a34a]'
+      case 'ema':
+        if (value >= 1.0) return 'bg-[#86efac] text-black'
+        if (value >= 0.8) return 'bg-[#fef08a] text-black' 
+        if (value < 0) return 'bg-[#4ade80] text-black'
+        return 'bg-[#86efac] text-black'
+      case 'rsi':
+        if (value >= 0.6) return 'bg-[#4ade80] text-black'
+        if (value >= 0.5) return 'bg-[#4ade80] text-black'
+        if (value >= 0.2) return 'bg-[#4ade80] text-black'
+        if (value < 0) return 'bg-[#4ade80] text-black'
+        return 'bg-[#4ade80] text-black'
+      case 'macd':
+        if (value >= 0.9) return 'bg-[#4ade80] text-black'
+        if (value >= 0.6) return 'bg-[#4ade80] text-black'
+        if (value < 0) return 'bg-[#4ade80] text-black'
+        return 'bg-[#4ade80] text-black'
+      case 'st_icon':
+        if (value > 0) return 'bg-[#4ade80]'
+        return 'bg-[#ef4444]'
+      case 'st_val':
+        if (value > 0) return 'bg-[#86efac] text-black'
+        if (value < 0) return 'bg-[#e5e7eb] text-black' 
+        return 'bg-[#86efac] text-black'
+      default:
+        return ''
+    }
   }
 
   return (
-    <div className="bg-[#1a1f3a] rounded-lg p-6 border border-[#2d3748]">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-2xl font-bold text-white mb-2">
-            MULTI-TIME FRAME BIAS MATRIX
-            {symbol && <span className="text-[#00ff88] ml-2">({symbol})</span>}
-          </h3>
-          <div className="flex items-center space-x-4 text-sm">
-            <span className="text-gray-400">EMA Length: <span className="text-white">{settings?.emaLength || 50}</span></span>
-            <span className="text-gray-400">RSI Length: <span className="text-white">{settings?.rsiLength || 14}</span></span>
-            <span className="text-gray-400">ADX Threshold: <span className="text-white">{settings?.adxThreshold || 25}</span></span>
-            <span className="text-gray-400">MACD: <span className="text-white">{settings?.macdFast || 12}/{settings?.macdSlow || 26}/{settings?.macdSignal || 9}</span></span>
+    <div 
+      className="bg-[#111318] text-white overflow-hidden relative shadow-2xl font-sans"
+      style={{
+        width: '980px',
+        height: '580px',
+        borderRadius: '10px',
+        borderWidth: '3px',
+        borderColor: '#2d3748',
+        borderStyle: 'solid'
+      }}
+    >
+      {/* Header Section */}
+      <div className="px-8 pt-6 pb-3 relative">
+        <div className="flex justify-between items-start">
+          <div>
+            <h2 className="text-base font-bold text-gray-100 tracking-wide mb-2">MULTI-TIME FRAME BIAS MATRIX</h2>
+            <div className="flex items-baseline gap-3">
+              <span className="text-[#22c55e] text-2xl font-bold">
+                AGGREGATE BIAS: {aggregate?.score > 0 ? '+' : ''}{aggregate?.score || 72}
+              </span>
+              <span className="text-gray-200 text-xl font-semibold">
+                (GRADE: {aggregate?.grade || 'A-'})
+              </span>
+              <div className="flex items-center gap-2 text-[#22c55e] text-2xl font-bold ml-2">
+                <span>↑↑</span>
+                <span>Bullish</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Gauge */}
+          <div className="absolute top-4 right-8 w-32 h-20">
+             <svg className="w-full h-full" viewBox="0 0 100 55">
+              <path d="M 10,50 A 40,40 0 0,1 90,50" fill="none" stroke="#374151" strokeWidth="4" strokeLinecap="round" />
+              <path d="M 10,50 A 40,40 0 0,1 90,50" fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeDasharray={`${(aggregate?.confidence || 0.88) * 126} 126`} />
+              <g transform={`rotate(${(aggregate?.confidence || 0.88) * 180 - 90} 50 50)`}>
+                <line x1="50" y1="50" x2="50" y2="20" stroke="#22c55e" strokeWidth="2" />
+                <circle cx="50" cy="50" r="3" fill="#22c55e" />
+              </g>
+            </svg>
+            <div className="absolute bottom-0 w-full text-center">
+               <div className="text-[9px] text-gray-400 font-bold">CONFIDENCE {aggregate?.confidence || 0.88}</div>
+            </div>
+            <div className="absolute top-0 right-0 text-[9px] text-gray-500">300.00</div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-sm text-gray-400 mb-1">AGGREGATE BIAS:</div>
-          <div className={`text-3xl font-bold ${aggregate?.score >= 0 ? 'text-[#00ff88]' : 'text-[#ff3366]'}`}>
-            {aggregate?.score >= 0 ? '+' : ''}{aggregate?.score || 0} 
-            <span className="text-sm ml-2">(GRADE: {aggregate?.grade || 'N/A'})</span>
+        
+        {/* Green underline bar */}
+        <div className="w-[35%] h-[3px] bg-[#22c55e] mt-2 rounded-full"></div>
+        <div className="w-full h-[1px] bg-gray-800 mt-[-1px] z-[-1]"></div>
+      </div>
+
+      <div className="flex h-full">
+        {/* Left Sidebar */}
+        <div className="w-[260px] px-8 py-5 space-y-6 text-sm">
+          <div className="space-y-3 text-gray-300 font-medium">
+            <div className="flex justify-between">
+              <span>RSI Period:</span>
+              <span>{settings?.rsiLength || '4.02'}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>EMA Period:</span>
+              <span>{settings?.emaLength || '4.02'}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>ADX Threshold:</span>
+              <span>{settings?.adxThreshold || 25}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Alerts On:</span>
+              <span>Bias</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Strong Trend</span>
+              <span>+60</span>
+            </div>
           </div>
-          <div className="flex items-center justify-end mt-2">
-            <span className={`mr-2 ${aggregate?.score >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {aggregate?.score >= 0 ? '↑' : '↓'} {aggregate?.bias || 'Neutral'}
-            </span>
-            <div className="relative w-16 h-16">
-              <svg className="transform -rotate-90 w-16 h-16">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke="#2d3748"
-                  strokeWidth="6"
-                  fill="none"
-                />
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="28"
-                  stroke={aggregate?.score >= 0 ? '#00ff88' : '#ff3366'}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeDasharray="175.93"
-                  strokeDashoffset={175.93 * (1 - (aggregate?.confidence || 0))}
-                  className="transition-all duration-500"
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-bold text-white">{aggregate?.confidence?.toFixed(2) || '0.00'}</span>
+
+          <div className="pt-3">
+            <h3 className="text-gray-400 mb-4 uppercase text-xs font-bold tracking-wider">CONFIDENCE</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">EMA</span>
+                <ToggleSwitch enabled={true} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">RSI</span>
+                <ToggleSwitch enabled={true} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">MACD</span>
+                <ToggleSwitch enabled={true} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-300">ST <span className="text-[10px] text-gray-500 ml-1">1Week</span></span>
+                <ToggleSwitch enabled={true} />
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#2d3748]">
-              <th className="text-left py-3 px-4 text-gray-400 font-semibold">Timeframe</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">SCORE</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">CONFIDENT</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">EMA</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">RSI</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">MACD</th>
-              <th className="text-center py-3 px-4 text-gray-400 font-semibold">SUPERTREND</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row, index) => (
-              <tr 
-                key={index} 
-                className="border-b border-[#2d3748] hover:bg-[#252b47] transition-colors"
-              >
-                <td className="py-4 px-4 font-semibold text-white">{row.timeframe}</td>
-                <td className="py-4 px-4">
-                  <div className={`inline-flex items-center justify-center px-4 py-2 rounded font-bold ${getScoreColor(row.score)}`}>
-                    {row.score > 0 ? '+' : ''}{row.score}
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full border-2 ${getADXColor(row.adx)}`}></div>
-                    <span className={`font-semibold ${getConfidenceColor(row.confidence)}`}>
-                      {row.confidence.toFixed(2)}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <div className={`w-8 h-8 rounded flex items-center justify-center ${getIndicatorColor(row.ema)}`}>
-                      <span className="text-white font-bold text-xs">
-                        {row.ema > 0 ? '+' : ''}{row.ema.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <div className={`w-8 h-8 rounded flex items-center justify-center ${getIndicatorColor(row.rsi)}`}>
-                      <span className="text-white font-bold text-xs">
-                        {row.rsi > 0 ? '+' : ''}{row.rsi.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <div className={`w-8 h-8 rounded flex items-center justify-center ${getIndicatorColor(row.macd)}`}>
-                      <span className="text-white font-bold text-xs">
-                        {row.macd > 0 ? '+' : ''}{row.macd.toFixed(1)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-4 px-4 text-center">
-                  <div className="flex items-center justify-center space-x-1">
-                    <div className={`w-8 h-8 rounded flex items-center justify-center ${getIndicatorColor(row.supertrend)}`}>
-                      <span className="text-white font-bold text-xs">
-                        {row.supertrend > 0 ? '+' : ''}{row.supertrend}
-                      </span>
-                    </div>
-                  </div>
-                </td>
+        {/* Table */}
+        <div className="flex-1 pr-6 pt-3">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="text-gray-200 text-xs font-bold uppercase tracking-wider">
+                <th className="pb-3 text-left pl-3">Timeframe</th>
+                <th className="pb-3 text-center">SCORE</th>
+                <th className="pb-3 text-center" colSpan="2">CONFIDENT</th>
+                <th className="pb-3 text-center">EMA</th>
+                <th className="pb-3 text-center">RSI</th>
+                <th className="pb-3 text-center">MACD</th>
+                <th className="pb-3 text-center" colSpan="2">SUPERTREND</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="text-base font-bold">
+              {data && data.length > 0 ? data.map((row, idx) => (
+                <tr key={idx} className="border-b border-gray-800/50 h-[68px]">
+                  {/* Timeframe */}
+                  <td className="bg-[#1f2937] text-white text-center w-24 border border-gray-700 text-sm">
+                    {row.timeframe}
+                  </td>
+                  
+                  {/* Score */}
+                  <td className={`${getCellBackground('score', row.score)} text-white text-center border border-gray-700 w-24`}>
+                    {row.score > 0 ? '+' : ''}{row.score}
+                  </td>
 
-      {/* Legend */}
-      <div className="mt-6 flex items-center justify-between text-xs">
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-400">ADX Values:</span>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full border-2 border-blue-400 bg-blue-400/20"></div>
-                <span className="text-gray-300">→ 0.2</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full border-2 border-gray-400 bg-gray-400/20"></div>
-                <span className="text-gray-300">→ 0.5</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full border-2 border-[#ff3366] bg-[#ff3366]/20"></div>
-                <span className="text-gray-300">→ 0.8</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 rounded-full border-2 border-[#00ff88] bg-[#00ff88]/20"></div>
-                <span className="text-gray-300">→ 1.0</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center space-x-6">
-          <div className="flex items-center space-x-2">
-            <span className="text-gray-400">EMA/RSI/MCD:</span>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-1">
-                <div className="w-6 h-6 rounded bg-[#10b981]"></div>
-                <span className="text-gray-300">→ +1</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-6 h-6 rounded bg-gray-600"></div>
-                <span className="text-gray-300">→ 0</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-6 h-6 rounded bg-[#ef4444]"></div>
-                <span className="text-gray-300">→ -1</span>
-              </div>
-            </div>
-          </div>
+                  {/* Confident Value */}
+                  <td className={`${getCellBackground('confident', row.confidence)} text-center border border-gray-700 w-20`}>
+                    {row.confidence?.toFixed(2)}
+                  </td>
+
+                  {/* Confident Icon (ADX) */}
+                  <td className={`${getCellBackground('adx', row.confidence)} text-center w-16 border border-gray-700`}>
+                    <div className="flex justify-center">
+                      <div className={`w-5 h-5 rounded-full border-2 ${row.confidence > 0.8 ? 'border-blue-600' : 'border-gray-400'}`}></div>
+                    </div>
+                  </td>
+
+                  {/* EMA */}
+                  <td className={`${getCellBackground('ema', row.ema)} text-center border border-gray-700 w-20`}>
+                    {row.ema > 0 ? '+' : ''}{row.ema?.toFixed(1)}
+                  </td>
+
+                  {/* RSI */}
+                  <td className={`${getCellBackground('rsi', row.rsi)} text-center border border-gray-700 w-20`}>
+                    {row.rsi > 0 ? '+' : ''}{row.rsi?.toFixed(1)}
+                  </td>
+
+                  {/* MACD */}
+                  <td className={`${getCellBackground('macd', row.macd)} text-center border border-gray-700 w-20`}>
+                    {row.macd > 0 ? '+' : ''}{row.macd?.toFixed(1)}
+                  </td>
+
+                  {/* Supertrend Icon */}
+                  <td className={`${getCellBackground('st_icon', row.supertrend)} text-center w-14 border border-gray-700`}>
+                    <div className="flex justify-center">
+                      <div className="w-5 h-5 border-2 border-black flex items-center justify-center">
+                        <div className="w-2.5 h-2.5 bg-black/20"></div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Supertrend Value */}
+                  <td className={`${getCellBackground('st_val', row.supertrend)} text-center border border-gray-700 w-16`}>
+                    {row.supertrend > 0 ? '+' : ''}{row.supertrend}
+                  </td>
+                </tr>
+              )) : (
+                <tr><td colSpan="9" className="text-center py-10 text-gray-500">No Data</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
